@@ -2,21 +2,29 @@
   <div class="container">
     <h1>Masonry image grid - Paul Weimann</h1>
 
-    <div class="grid images-unloaded">
+    <div class="grid">
       <div class="grid-sizer"></div>
       <div class="grid-gutter"></div>
-      <Card
+      <div
+        class="grid-item grid-item-width images-unloaded"
         v-for="item in images"
         :key="item.id"
-        :img="item"
-        @loaded-image="increaseCounterLoadedImages"
-      />
+      >
+        <Card :img="item" @loaded-image="increaseCounterLoadedImages" />
+      </div>
     </div>
   </div>
 </template>
 <script>
 import Masonry from "masonry-layout";
 import Card from "./components/Card.vue";
+
+const INITIAL_PAGE = 1;
+const GRID = ".grid";
+const GRID_ITEM = ".grid-item";
+const UNLOADED_GRID_ITEMS = ".grid-item.images-unloaded";
+const VERTICAL_SCROLL_OFFSET = 200;
+const CLASS_IMAGES_UNLOADED = "images-unloaded";
 
 export default {
   name: "App",
@@ -28,6 +36,7 @@ export default {
       images: [],
       msnry: null,
       counterLoadedImages: 0,
+      appendImagesLock: false,
     };
   },
   computed: {
@@ -38,35 +47,59 @@ export default {
   watch: {
     imagesLoaded(newValue) {
       if (newValue) {
-        const grid = document.querySelector(".grid");
-        grid.classList.remove("images-unloaded");
-        this.msnry.options.itemSelector = ".grid-item";
-        let items = grid.querySelectorAll(".grid-item");
-        this.msnry.appended(items);
+        const grid = document.querySelector(GRID);
+        const newGridItems = grid.querySelectorAll(UNLOADED_GRID_ITEMS);
+        for (let item of newGridItems) {
+          item.classList.remove(CLASS_IMAGES_UNLOADED);
+        }
+        this.msnry.options.itemSelector = GRID_ITEM;
+        this.msnry.appended(newGridItems);
       }
     },
   },
   methods: {
-    async fetchImages(page) {
+    async fetchImages(nextPage) {
+      //nextPage is not index based
       const res = await fetch(
-        `https://picsum.photos/v2/list?page=${page}&limit=30`
+        `https://picsum.photos/v2/list?nextPage=${nextPage}&limit=9`
       );
       let data = await res.json();
       console.log("Fetched Images");
+      this.images.push(...data);
       return data;
     },
     increaseCounterLoadedImages() {
       this.counterLoadedImages++;
       console.log("counter: " + this.counterLoadedImages);
     },
+    async appendImages() {
+      if (this.appendImagesLock === false && this.imagesLoaded) {
+        this.appendImagesLock = true;
+        const nextPage = parseInt(this.images.length / 30, 10) + 1;
+        console.log("appends images - next Page: " + nextPage);
+        await this.fetchImages(nextPage);
+        this.appendImagesLock = false;
+      }
+    },
+    initScrollListener() {
+      window.onscroll = () => {
+        let bottomOfWindow =
+          document.documentElement.scrollTop + window.innerHeight >=
+          document.documentElement.offsetHeight - VERTICAL_SCROLL_OFFSET;
+
+        if (bottomOfWindow) {
+          this.appendImages();
+        }
+      };
+    },
   },
-  async created() {
+  created() {
     //fetch initial pictures
-    const data = await this.fetchImages(0);
-    this.images.push(...data);
+    this.fetchImages(INITIAL_PAGE);
   },
   mounted() {
-    let grid = document.querySelector(".grid");
+    this.initScrollListener();
+    let grid = document.querySelector(GRID);
 
     this.msnry = new Masonry(grid, {
       itemSelector: "none",
@@ -102,7 +135,7 @@ export default {
   max-width: 1200px;
 }
 
-.grid.images-unloaded {
+.images-unloaded {
   opacity: 0;
 }
 

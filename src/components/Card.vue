@@ -1,7 +1,5 @@
 <template>
-  <div class="grid-item grid-item-width">
-    <img class="" ref="img" :src="img.download_url" />
-  </div>
+  <img class="" ref="img" :src="img.download_url" />
 </template>
 
 <script>
