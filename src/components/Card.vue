@@ -1,5 +1,15 @@
 <template>
-  <img class="" ref="img" :src="img.download_url" />
+  <div
+    class="card-container"
+    :class="{ 'flip-vertical': pressed }"
+    @click="pressed = !pressed"
+  >
+    <img class="front" ref="img" :src="img.download_url" />
+    <div class="back">
+      <span>Author: {{ img.author }}</span>
+      <span>Url: </span><a :href="img.url">{{ img.url }}</a>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -9,7 +19,9 @@ export default {
     img: Object,
   },
   data() {
-    return {};
+    return {
+      pressed: false,
+    };
   },
   mounted() {
     this.$refs.img.addEventListener("load", () => {
@@ -20,6 +32,40 @@ export default {
 </script>
 
 <style scoped>
+.card-container {
+  position: relative;
+  transition: transform 1.5s;
+  transform-style: preserve-3d;
+}
+
+.card-container.flip-vertical {
+  transform: rotateY(180deg);
+}
+
+.front {
+  position: relative;
+  backface-visibility: hidden;
+  max-width: 100%;
+}
+
+.back {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: rotateY(180deg);
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #fff;
+  background-color: #425563;
+  overflow: hidden;
+  padding: 10px;
+}
+
 img {
   display: block;
   max-width: 100%;

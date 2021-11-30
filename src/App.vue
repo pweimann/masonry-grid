@@ -7,44 +7,37 @@
       :disabled="!imagesLoaded"
       @update:value="updateAmountOfImages"
     />
-    <div class="grid">
-      <div class="grid-sizer"></div>
-      <div class="grid-gutter"></div>
-      <div
-        class="grid-item grid-item-width images-unloaded"
-        v-for="item in images"
-        :key="item.id"
-      >
-        <Card :img="item" @loaded-image="increaseCounterLoadedImages" />
-      </div>
-    </div>
+    <masonry-grid-layout :items="images" :loadedItems="counterLoadedImages">
+      <template v-slot:default="slotProps">
+        <Card
+          :img="slotProps.item"
+          @loaded-image="increaseCounterLoadedImages"
+        />
+      </template>
+    </masonry-grid-layout>
   </div>
 </template>
 <script>
-import Masonry from "masonry-layout";
 import Card from "./components/Card.vue";
+import MasonryGridLayout from "./layouts/MasonryGridLayout.vue";
 import { NSelect } from "naive-ui";
 
 const INITIAL_PAGE = 1;
-const GRID = ".grid";
-const GRID_ITEM = ".grid-item";
-const UNLOADED_GRID_ITEMS = ".grid-item.images-unloaded";
 const VERTICAL_SCROLL_OFFSET = 200;
-const CLASS_IMAGES_UNLOADED = "images-unloaded";
 
 export default {
   name: "App",
   components: {
     Card,
     NSelect,
+    MasonryGridLayout,
   },
   data() {
     return {
       images: [],
-      msnry: null,
       counterLoadedImages: 0,
       appendImagesLock: false,
-      amountOfItems: 20,
+      amountOfItems: 3, //TODO set to 20
       selectOptions: [
         {
           label: "20 Bilder",
@@ -66,19 +59,6 @@ export default {
       return this.counterLoadedImages === this.images.length;
     },
   },
-  watch: {
-    imagesLoaded(newValue) {
-      if (newValue) {
-        const grid = document.querySelector(GRID);
-        const newGridItems = grid.querySelectorAll(UNLOADED_GRID_ITEMS);
-        for (let item of newGridItems) {
-          item.classList.remove(CLASS_IMAGES_UNLOADED);
-        }
-        this.msnry.options.itemSelector = GRID_ITEM;
-        this.msnry.appended(newGridItems);
-      }
-    },
-  },
   methods: {
     async fetchImages(nextPage) {
       //nextPage is not index based
@@ -90,7 +70,6 @@ export default {
     },
     increaseCounterLoadedImages() {
       this.counterLoadedImages++;
-      console.log("counter: " + this.counterLoadedImages);
     },
     async appendImages(amount) {
       if (amount < 1) {
@@ -162,17 +141,6 @@ export default {
   },
   mounted() {
     this.initScrollListener();
-    let grid = document.querySelector(GRID);
-
-    this.msnry = new Masonry(grid, {
-      itemSelector: "none",
-      columnWidth: ".grid-sizer",
-      gutter: ".grid-gutter",
-      percentPosition: true,
-      stagger: 30,
-      visibleStyle: { opacity: 1 },
-      hiddenStyle: { opacity: 0 },
-    });
   },
 };
 </script>
@@ -198,30 +166,20 @@ export default {
   max-width: 1200px;
 }
 
-.images-unloaded {
-  opacity: 0;
-}
-
-.grid-item,
-.grid-sizer {
-  width: 32%;
-}
-
-.grid-gutter {
-  width: 2%;
-}
-
-.grid-item {
-  margin-bottom: 20px;
-}
-
-.grid-item-width {
-  width: 32%;
-}
-
 .n-select {
   max-width: 200px;
   margin: 0 auto;
   margin-bottom: 20px;
+}
+
+a {
+  color: #fff;
+  text-decoration: none;
+}
+
+a:hover {
+  transition: all 0.3s ease-in-out;
+  text-decoration: underline;
+  color: #1fb5c5;
 }
 </style>
