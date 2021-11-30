@@ -37,7 +37,7 @@ export default {
       images: [],
       counterLoadedImages: 0,
       appendImagesLock: false,
-      amountOfItems: 3, //TODO set to 20
+      amountOfItems: 20,
       selectOptions: [
         {
           label: "20 Bilder",
@@ -157,7 +157,7 @@ export default {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: #425563;
   margin-top: 60px;
 }
 

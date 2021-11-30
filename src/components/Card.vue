@@ -4,11 +4,11 @@
     :class="{ 'flip-vertical': pressed }"
     @click="pressed = !pressed"
   >
-    <img class="front" ref="img" :src="img.download_url" />
     <div class="back">
       <span>Author: {{ img.author }}</span>
       <span>Url: </span><a :href="img.url">{{ img.url }}</a>
     </div>
+    <img class="front" ref="img" :src="img.download_url" />
   </div>
 </template>
 
