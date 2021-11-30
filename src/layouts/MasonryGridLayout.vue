@@ -24,7 +24,7 @@ export default {
   name: "MasonryGridLayout",
   props: {
     items: {
-      type: [],
+      type: Array,
       required: true,
     },
     loadedItems: {
