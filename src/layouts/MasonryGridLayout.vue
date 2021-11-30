@@ -1,13 +1,18 @@
 <template>
-  <div class="grid">
-    <div class="grid-sizer"></div>
-    <div class="grid-gutter"></div>
-    <div
-      class="grid-item grid-item-width item-unloaded"
-      v-for="(item, index) in items"
-      :key="index"
-    >
-      <slot :item="item"></slot>
+  <div>
+    <div class="grid">
+      <div class="grid-sizer"></div>
+      <div class="grid-gutter"></div>
+      <transition-group name="grid-item">
+        <div
+          class="grid-item grid-item-width item-unloaded"
+          v-for="item in items"
+          :id="item.id"
+          :key="item.id"
+        >
+          <slot :item="item"></slot>
+        </div>
+      </transition-group>
     </div>
   </div>
 </template>
@@ -40,6 +45,7 @@ export default {
   watch: {
     loadedItems(newValue) {
       if (this.items.length === newValue) {
+        this.msnry.layout(); //unstamps removed items
         const grid = document.querySelector(GRID);
         const newGridItems = grid.querySelectorAll(UNLOADED_GRID_ITEMS);
         for (let item of newGridItems) {
@@ -87,5 +93,14 @@ export default {
 
 .grid-item-width {
   width: 32%;
+}
+
+.grid-item-enter-active,
+.grid-item-leave-active {
+  transition: all 1.5s ease;
+}
+.grid-item-enter-from,
+.grid-item-leave-to {
+  opacity: 0;
 }
 </style>

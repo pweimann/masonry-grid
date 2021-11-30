@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <h1>Masonry image grid - Paul Weimann</h1>
+    <h1>Masonry Image Grid - Paul Weimann</h1>
     <n-select
       :value="amountOfItems"
       :options="selectOptions"
@@ -70,44 +70,13 @@ export default {
     },
     increaseCounterLoadedImages() {
       this.counterLoadedImages++;
-    },
-    async appendImages(amount) {
-      if (amount < 1) {
-        return;
-      }
-      let addedImages = 0;
-      let p = this.getNextPage();
-      while (addedImages < amount) {
-        const data = await this.fetchImages(p);
-        const calcRemainingImages = amount - addedImages;
-        if (data.length > calcRemainingImages) {
-          //requested more images than necessary -> reduce
-          this.images.push(...data.slice(0, calcRemainingImages));
-          addedImages += calcRemainingImages;
-        } else {
-          this.images.push(...data);
-          addedImages += data.length;
-        }
-        p++;
-      }
+      console.log("counter: " + this.counterLoadedImages);
     },
     async appendNextPage() {
       if (this.appendImagesLock === false && this.imagesLoaded) {
         this.appendImagesLock = true;
-        const isDivisible =
-          parseInt(this.images.length / this.amountOfItems, 10) ===
-          this.images.length / this.amountOfItems;
-        if (isDivisible) {
-          const data = await this.fetchImages(this.getNextPage());
-          this.images.push(...data);
-        } else {
-          //amountOfItems was reduced -> request only remaining images of actual page
-          const remaining =
-            this.amountOfItems - (this.images.length % this.amountOfItems);
-          const data = await this.fetchImages(this.getNextPage());
-          //get last n number of data
-          this.images.push(...data.reverse().slice(0, remaining));
-        }
+        const data = await this.fetchImages(this.getNextPage());
+        this.images.push(...data);
         this.appendImagesLock = false;
       }
     },
@@ -118,7 +87,15 @@ export default {
     },
     async updateAmountOfImages(newValue) {
       if (this.amountOfItems < newValue) {
-        await this.appendImages(newValue - this.amountOfItems);
+        //add images
+        this.amountOfItems = newValue;
+        const data = await this.fetchImages(INITIAL_PAGE);
+        this.images.push(...data.slice(this.images.length, newValue));
+      }
+      if (this.images.length > newValue) {
+        //remove images
+        this.images = this.images.slice(0, newValue);
+        this.counterLoadedImages = this.images.length;
       }
       this.amountOfItems = newValue;
     },
