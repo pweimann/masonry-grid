@@ -46,6 +46,7 @@ export default {
   position: relative;
   backface-visibility: hidden;
   max-width: 100%;
+  transform: rotateX(0deg);
 }
 
 .back {
